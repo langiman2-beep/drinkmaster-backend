@@ -1,0 +1,378 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "DrinkMaster API",
+    "version": "1.0.0",
+    "description": "Full Interactive Backend API documentation for DrinkMaster project"
+  },
+  "servers": [
+    {
+      "url": "/api",
+      "description": "Current Server (Local or Render)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/auth/signup": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Register a new user",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password"],
+                "properties": {
+                  "name": { "type": "string", "example": "Sanka" },
+                  "email": { "type": "string", "example": "sanka@odessa.ua" },
+                  "password": { "type": "string", "example": "password123" },
+                  "birthdate": { "type": "string", "example": "1982-12-06" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "User created" },
+          "400": { "description": "Validation error" },
+          "409": { "description": "Email in use" }
+        }
+      }
+    },
+    "/auth/signin": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login user",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "example": "sanka@odessa.ua" },
+                  "password": { "type": "string", "example": "password123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login successful (returns token)" },
+          "401": { "description": "Email or password is wrong" }
+        }
+      }
+    },
+    "/auth/signout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Logout user",
+        "responses": {
+          "204": { "description": "Logout successful" },
+          "401": { "description": "Not authorized" }
+        }
+      }
+    },
+    "/users/current": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get current user info",
+        "responses": {
+          "200": { "description": "Current user data" },
+          "401": { "description": "Not authorized" }
+        }
+      }
+    },
+    "/users/update": {
+      "patch": {
+        "tags": ["Users"],
+        "summary": "Update user profile (name or avatarURL)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "example": "Sanka Boss" },
+                  "avatarURL": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "User updated" },
+          "401": { "description": "Not authorized" }
+        }
+      }
+    },
+    "/users/subscribe": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Subscribe to newsletter",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email"],
+                "properties": {
+                  "email": { "type": "string", "example": "sanka@odessa.ua" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Subscription successful" }
+        }
+      }
+    },
+    "/filters/categories": {
+      "get": {
+        "tags": ["Filters"],
+        "summary": "Get sorted list of cocktail categories",
+        "security": [],
+        "responses": { "200": { "description": "Categories list" } }
+      }
+    },
+    "/filters/ingredients": {
+      "get": {
+        "tags": ["Filters"],
+        "summary": "Get ingredients list from DB",
+        "security": [],
+        "responses": { "200": { "description": "Ingredients list" } }
+      }
+    },
+    "/filters/glasses": {
+      "get": {
+        "tags": ["Filters"],
+        "summary": "Get sorted list of glasses",
+        "security": [],
+        "responses": { "200": { "description": "Glasses list" } }
+      }
+    },
+    "/drinks/mainpage": {
+      "get": {
+        "tags": ["Drinks"],
+        "summary": "Get drinks for main page (4 categories)",
+        "responses": {
+          "200": { "description": "Drinks grouped by main categories" }
+        }
+      }
+    },
+    "/drinks/popular": {
+      "get": {
+        "tags": ["Drinks"],
+        "summary": "Get top popular drinks based on favorites count",
+        "responses": { "200": { "description": "Popular drinks list" } }
+      }
+    },
+    "/drinks/search": {
+      "get": {
+        "tags": ["Drinks"],
+        "summary": "Search drinks by keyword, category, ingredient with pagination",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Search word in drink title"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Exact category name (e.g. Cocktail)"
+          },
+          {
+            "name": "ingredient",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Ingredient name (e.g. Vodka)"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer", "default": 1 }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 10 }
+          }
+        ],
+        "responses": { "200": { "description": "Paginated search results" } }
+      }
+    },
+    "/drinks/own": {
+      "get": {
+        "tags": ["Drinks"],
+        "summary": "Get user's own created drinks",
+        "responses": { "200": { "description": "Own drinks list" } }
+      }
+    },
+    "/drinks/own/add": {
+      "post": {
+        "tags": ["Drinks"],
+        "summary": "Add a new own drink recipe",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "drink",
+                  "category",
+                  "alcoholic",
+                  "glass",
+                  "instructions"
+                ],
+                "properties": {
+                  "drink": { "type": "string", "example": "Odessa Breeze" },
+                  "category": { "type": "string", "example": "Cocktail" },
+                  "alcoholic": {
+                    "type": "string",
+                    "enum": ["Alcoholic", "Non alcoholic"],
+                    "example": "Alcoholic"
+                  },
+                  "glass": { "type": "string", "example": "Highball glass" },
+                  "description": {
+                    "type": "string",
+                    "example": "Refreshing sea breeze cocktail"
+                  },
+                  "instructions": {
+                    "type": "string",
+                    "example": "Mix all ingredients with ice and stir well."
+                  },
+                  "drinkThumb": {
+                    "type": "string",
+                    "example": "https://example.com/drink.jpg"
+                  },
+                  "ingredients": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "title": { "type": "string", "example": "Rum" },
+                        "measure": { "type": "string", "example": "50 ml" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Drink created" },
+          "400": { "description": "Validation error" },
+          "403": { "description": "Underage restriction for alcoholic drinks" }
+        }
+      }
+    },
+    "/drinks/own/remove/{id}": {
+      "delete": {
+        "tags": ["Drinks"],
+        "summary": "Delete user's own drink by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Drink deleted" },
+          "404": { "description": "Recipe not found or not owner" }
+        }
+      }
+    },
+    "/drinks/favorite": {
+      "get": {
+        "tags": ["Drinks"],
+        "summary": "Get user's favorite drinks",
+        "responses": { "200": { "description": "Favorite drinks list" } }
+      }
+    },
+    "/drinks/favorite/add/{id}": {
+      "post": {
+        "tags": ["Drinks"],
+        "summary": "Add drink to favorites by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Added to favorites" },
+          "404": { "description": "Recipe not found" }
+        }
+      }
+    },
+    "/drinks/favorite/remove/{id}": {
+      "delete": {
+        "tags": ["Drinks"],
+        "summary": "Remove drink from favorites by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Removed from favorites" },
+          "404": { "description": "Recipe not found" }
+        }
+      }
+    },
+    "/drinks/{id}": {
+      "get": {
+        "tags": ["Drinks"],
+        "summary": "Get single drink details by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Drink details" },
+          "404": { "description": "Recipe not found" }
+        }
+      }
+    }
+  }
+}
