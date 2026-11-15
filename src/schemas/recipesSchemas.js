@@ -1,5 +1,11 @@
 const Joi = require("joi");
 
+const ingredientItem = Joi.object({
+  title: Joi.string().required(),
+  measure: Joi.string().required(),
+  ingredientId: Joi.string().optional(),
+});
+
 const addRecipeSchema = Joi.object({
   drink: Joi.string().required().messages({
     "any.required": "Missing required drink name field",
@@ -10,14 +16,8 @@ const addRecipeSchema = Joi.object({
   description: Joi.string().allow("").optional(),
   instructions: Joi.string().required(),
   drinkThumb: Joi.string().allow("").optional(),
-  ingredients: Joi.array()
-    .items(
-      Joi.object({
-        title: Joi.string().required(),
-        measure: Joi.string().required(),
-        ingredientId: Joi.string().optional(),
-      }),
-    )
+  ingredients: Joi.alternatives()
+    .try(Joi.array().items(ingredientItem), Joi.string())
     .optional(),
 });
 

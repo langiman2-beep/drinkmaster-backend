@@ -57,21 +57,26 @@ const getPopularDrinks = async (req, res) => {
 const searchDrinks = async (req, res) => {
   const {
     keyword = "",
+    query = "",
     category = "",
     ingredient = "",
     page = 1,
     limit = 10,
   } = req.query;
+
+  const searchWord = (keyword || query).trim();
   const filter = { ...getAgeFilter(req.user) };
 
-  if (keyword) {
-    filter.drink = { $regex: keyword, $options: "i" };
+  if (searchWord) {
+    const escapedWord = searchWord.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    filter.drink = { $regex: escapedWord, $options: "i" };
   }
   if (category) {
     filter.category = category;
   }
   if (ingredient) {
-    filter["ingredients.title"] = { $regex: ingredient, $options: "i" };
+    const escapedIng = ingredient.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    filter["ingredients.title"] = { $regex: escapedIng, $options: "i" };
   }
 
   const skip = (Number(page) - 1) * Number(limit);
@@ -103,12 +108,26 @@ const addOwnDrink = async (req, res) => {
   const { _id: owner } = req.user;
   const ageFilter = getAgeFilter(req.user);
 
-  // Если юзеру нет 18, а он пытается создать алкогольный коктейль — тормозим!
   if (ageFilter.alcoholic && req.body.alcoholic === "Alcoholic") {
     throw HttpError(403, "Users under 18 can only add Non alcoholic drinks");
   }
 
-  const result = await Recipe.create({ ...req.body, owner });
+  const recipeData = { ...req.body, owner };
+
+  if (typeof recipeData.ingredients === "string") {
+    try {
+      recipeData.ingredients = JSON.parse(recipeData.ingredients);
+    } catch {
+      recipeData.ingredients = [];
+    }
+  }
+
+  if (req.file) {
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    recipeData.drinkThumb = `${baseUrl}/uploads/${req.file.filename}`;
+  }
+
+  const result = await Recipe.create(recipeData);
   res.status(201).json(result);
 };
 
@@ -139,7 +158,7 @@ const addFavoriteDrink = async (req, res) => {
 
   const result = await Recipe.findByIdAndUpdate(
     id,
-    { $addToSet: { favorite: userId } }, // $addToSet добавляет ID только если его там ещё нет
+    { $addToSet: { favorite: userId } },
     { new: true },
   );
 
@@ -157,7 +176,7 @@ const removeFavoriteDrink = async (req, res) => {
 
   const result = await Recipe.findByIdAndUpdate(
     id,
-    { $pull: { favorite: userId } }, // $pull вытаскивает ID юзера из массива
+    { $pull: { favorite: userId } },
     { new: true },
   );
 
