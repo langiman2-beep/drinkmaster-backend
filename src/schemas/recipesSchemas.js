@@ -3,7 +3,7 @@ const Joi = require("joi");
 const ingredientItem = Joi.object({
   title: Joi.string().required(),
   measure: Joi.string().required(),
-  ingredientId: Joi.string().optional(),
+  ingredientId: Joi.string().allow("", null).optional(),
 });
 
 const addRecipeSchema = Joi.object({

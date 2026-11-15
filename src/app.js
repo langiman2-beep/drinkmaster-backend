@@ -10,6 +10,8 @@ const alertsRouter = require("./routes/api/alertsRoutes");
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 
 app.use(logger(formatsLogger));

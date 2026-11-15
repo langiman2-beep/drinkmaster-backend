@@ -122,6 +122,16 @@ const addOwnDrink = async (req, res) => {
     }
   }
 
+  if (Array.isArray(recipeData.ingredients)) {
+    recipeData.ingredients = recipeData.ingredients.map((item) => {
+      const cleanItem = { ...item };
+      if (!cleanItem.ingredientId) {
+        delete cleanItem.ingredientId;
+      }
+      return cleanItem;
+    });
+  }
+
   if (req.file) {
     const baseUrl = `${req.protocol}://${req.get("host")}`;
     recipeData.drinkThumb = `${baseUrl}/uploads/${req.file.filename}`;
